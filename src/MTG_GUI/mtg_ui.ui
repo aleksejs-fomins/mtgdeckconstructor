@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MTG_UI</class>
+ <widget class="QMainWindow" name="MTG_UI">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>944</width>
+    <height>718</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>MTG_UI</string>
+  </property>
+  <widget class="QWidget" name="centralWidget">
+   <layout class="QVBoxLayout" name="verticalLayout">
+    <item>
+     <widget class="QTabWidget" name="mainTabWidget">
+      <property name="currentIndex">
+       <number>3</number>
+      </property>
+      <widget class="QWidget" name="collectionTab">
+       <attribute name="title">
+        <string>Collection</string>
+       </attribute>
+       <widget class="QTableWidget" name="collectionCardsTable">
+        <property name="geometry">
+         <rect>
+          <x>170</x>
+          <y>40</y>
+          <width>471</width>
+          <height>491</height>
+         </rect>
+        </property>
+       </widget>
+      </widget>
+      <widget class="QWidget" name="decksTab">
+       <attribute name="title">
+        <string>Decks</string>
+       </attribute>
+       <layout class="QHBoxLayout" name="horizontalLayout">
+        <item>
+         <layout class="QVBoxLayout" name="decksControlLayout">
+          <item>
+           <widget class="QTableWidget" name="decksDecklistTable"/>
+          </item>
+          <item>
+           <widget class="QComboBox" name="zoneComboBox"/>
+          </item>
+          <item>
+           <widget class="QFrame" name="decksCardImageFrame">
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>400</height>
+             </size>
+            </property>
+            <property name="frameShape">
+             <enum>QFrame::StyledPanel</enum>
+            </property>
+            <property name="frameShadow">
+             <enum>QFrame::Raised</enum>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <widget class="QTableWidget" name="decksCardsTable"/>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="proxyTab">
+       <attribute name="title">
+        <string>Proxy PDF</string>
+       </attribute>
+      </widget>
+      <widget class="QWidget" name="Scryfall">
+       <attribute name="title">
+        <string>Scryfall</string>
+       </attribute>
+       <layout class="QVBoxLayout" name="verticalLayout_2">
+        <item>
+         <widget class="QLineEdit" name="queryLineEdit"/>
+        </item>
+        <item>
+         <widget class="QPushButton" name="queryPushButton">
+          <property name="text">
+           <string>Query</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QTextEdit" name="responseTextEdit"/>
+        </item>
+       </layout>
+      </widget>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QMenuBar" name="menuBar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>944</width>
+     <height>22</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menuFile">
+    <property name="title">
+     <string>File</string>
+    </property>
+   </widget>
+   <widget class="QMenu" name="menuEdit">
+    <property name="title">
+     <string>Edit</string>
+    </property>
+   </widget>
+   <addaction name="menuFile"/>
+   <addaction name="menuEdit"/>
+  </widget>
+  <widget class="QToolBar" name="mainToolBar">
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+  </widget>
+  <widget class="QStatusBar" name="statusBar"/>
+ </widget>
+ <layoutdefault spacing="6" margin="11"/>
+ <resources/>
+ <connections/>
+</ui>
