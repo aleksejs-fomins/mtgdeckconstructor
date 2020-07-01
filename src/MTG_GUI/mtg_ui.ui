@@ -18,22 +18,21 @@
     <item>
      <widget class="QTabWidget" name="mainTabWidget">
       <property name="currentIndex">
-       <number>3</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="collectionTab">
        <attribute name="title">
         <string>Collection</string>
        </attribute>
-       <widget class="QTableWidget" name="collectionCardsTable">
-        <property name="geometry">
-         <rect>
-          <x>170</x>
-          <y>40</y>
-          <width>471</width>
-          <height>491</height>
-         </rect>
-        </property>
-       </widget>
+       <layout class="QHBoxLayout" name="horizontalLayout_2">
+        <item>
+         <widget class="QTableWidget" name="collectionCardsTable">
+          <attribute name="verticalHeaderVisible">
+           <bool>false</bool>
+          </attribute>
+         </widget>
+        </item>
+       </layout>
       </widget>
       <widget class="QWidget" name="decksTab">
        <attribute name="title">
@@ -82,7 +81,11 @@
        </attribute>
        <layout class="QVBoxLayout" name="verticalLayout_2">
         <item>
-         <widget class="QLineEdit" name="queryLineEdit"/>
+         <widget class="QLineEdit" name="queryLineEdit">
+          <property name="text">
+           <string>{&quot;set&quot; : &quot;c20&quot;, &quot;type&quot; : &quot;human&quot;}</string>
+          </property>
+         </widget>
         </item>
         <item>
          <widget class="QPushButton" name="queryPushButton">
@@ -93,6 +96,13 @@
         </item>
         <item>
          <widget class="QTextEdit" name="responseTextEdit"/>
+        </item>
+        <item>
+         <widget class="QPushButton" name="queryAddCollectionPushButton">
+          <property name="text">
+           <string>Add To Collection</string>
+          </property>
+         </widget>
         </item>
        </layout>
       </widget>

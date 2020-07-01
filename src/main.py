@@ -2,6 +2,9 @@
 # Import system libraries
 ###############################
 import os, sys, locale
+import requests
+import json
+import pandas as pd
 from PyQt5 import QtGui, QtCore, QtWidgets
 
 ###############################
@@ -39,6 +42,64 @@ class MtgGUI():
 
         # GUI-Constants
         self.fontsize = 15
+
+        # Reacts
+        self.gui.queryPushButton.clicked.connect(self.get_query)
+        self.gui.queryAddCollectionPushButton.clicked.connect(self.query_add_to_collection)
+
+        # Example request: 'https://api.scryfall.com/cards/search?q=c%3Dwhite+cmc%3D1'
+    def get_query(self):
+        txt = self.gui.queryLineEdit.text()
+        dict = json.loads(txt)
+
+        cardsSite = "https://api.scryfall.com/cards/search?q="
+        req = cardsSite + "+".join([str(k) + "%3D" + str(v) for k, v in dict.items()])
+        r = requests.get(req)
+        rJSON = r.json()
+
+        importantColumns = ['name', 'mana_cost', 'power', 'toughness', 'rarity', 'set', 'type_line']
+        df = pd.DataFrame(rJSON['data'])
+        df = df[importantColumns]
+
+        self.gui.responseTextEdit.setText(str(df))
+
+        self.recentQueryDF = df
+
+
+    def query_add_to_collection(self):
+        self.display_dataframe_collection(self.recentQueryDF)
+
+
+    def display_dataframe_collection(self, df):
+        # Set columns of QTable as DataFrame columns
+        self.gui.collectionCardsTable.setColumnCount(len(df.columns))
+        self.gui.collectionCardsTable.setHorizontalHeaderLabels(list(df.columns))
+
+        for idx, row in df.iterrows():
+            rowIdxQtable = self.gui.collectionCardsTable.rowCount()
+
+            self.gui.collectionCardsTable.insertRow(rowIdxQtable)
+            for iCol, cell in enumerate(list(row)):
+                self.gui.collectionCardsTable.setItem(rowIdxQtable, iCol, QtWidgets.QTableWidgetItem(cell))
+
+        self.gui.collectionCardsTable.resizeColumnsToContents()
+
+
+        # tableWidget.setRowCount(len(data))
+
+        # for i in range(0, len(data)):
+        #     for j in range(0, len(data.columns)):
+        #         item1 = str(data.iloc[i, j])
+        #         tableWidget.setItem(i, j, QTableWidgetItem(item1))
+        # return tableWidget
+
+
+
+
+        # For each row in DataFrame add that row as new row to QTable
+
+
+
 
 
 #######################################################
