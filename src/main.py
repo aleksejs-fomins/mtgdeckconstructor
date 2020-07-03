@@ -2,6 +2,7 @@
 # Import system libraries
 ###############################
 import os, sys, locale
+import shutil
 import requests
 import json
 import pandas as pd
@@ -15,19 +16,20 @@ rootdir = os.path.dirname(thisdir)
 sys.path.append(rootdir)
 
 #######################################
-# Compile QT File
-#######################################
-ui_ui_path = os.path.join(thisdir, "MTG_GUI", 'mtg_ui.ui')
-ui_py_path = os.path.join(thisdir, "MTG_GUI", 'mtg_ui.py')
-qtCompilePrefStr = 'pyuic5 ' + ui_ui_path + ' -o ' + ui_py_path
-print("Compiling QT GUI file", qtCompilePrefStr)
-os.system(qtCompilePrefStr)
-
-#######################################
 # Import local libraries
 #######################################
 
+import src.lib.os_lib as os_lib
+from src.lib.deck_lib import MagicDeck
+
 from src.MTG_GUI.mtg_ui import Ui_MTG_UI
+from src.MTG_GUI.new_deck import Ui_NewDeck
+
+#######################################
+# Compile QT File
+#######################################
+os_lib.compile_form(os.path.join(thisdir, "MTG_GUI", 'mtg_ui.ui'))
+os_lib.compile_form(os.path.join(thisdir, "MTG_GUI", 'new_deck.ui'))
 
 #######################################################
 # Main Window
@@ -43,14 +45,53 @@ class MtgGUI():
         # GUI-Constants
         self.fontsize = 15
 
+        # Variables
+        self.decksDir = os.path.join(rootdir, "Decks")
+        self.tmpFileName = os.path.join(self.decksDir, "tmpdeck.json")
+
         # Reacts
         self.gui.queryPushButton.clicked.connect(self.get_query)
         self.gui.queryAddCollectionPushButton.clicked.connect(self.query_add_to_collection)
+        self.gui.mainTabWidget.currentChanged.connect(self.react_tab_change)
+        self.gui.decksNewDeckPushButton.clicked.connect(self.new_deck_start_gui)
 
-        self.gui.mainTabWidget.currentChanged.connect(self.reactTabChange)
+    def new_deck_start_gui(self):
+        # Init
+        self.newDeckDialog = QtWidgets.QWidget()
+        self.newDeckDialog.show()
+        self.newDeckGUI = Ui_NewDeck()
+        self.newDeckGUI.setupUi(self.newDeckDialog)
+
+        # Actions:
+        self.newDeckGUI.newDeckDuplicatePushButton.clicked.connect(self.import_deck)
+        self.newDeckGUI.newDeckCancelPushButton.clicked.connect(self.newDeckDialog.close)
+        self.newDeckGUI.newDeckOkPushButton.clicked.connect(self.new_deck)
+
+    def new_deck(self):
+        deckName = self.newDeckGUI.newDeckNameLineEdit.text()
+        format = self.newDeckGUI.newDeckTypeComboBox.currentText()
+        importFilePath = self.newDeckGUI.newDeckDuplicateLineEdit.text()
+        if importFilePath != "":
+            shutil.copyfile(importFilePath, self.tmpFileName)
+            self.currentDeckClass = MagicDeck(deckName, format, self.tmpFileName, importDeck=True)
+        else:
+            self.currentDeckClass = MagicDeck(deckName, format, self.tmpFileName, importDeck=False)
+
+        self.newDeckDialog.close()
 
 
-        # Example request: 'https://api.scryfall.com/cards/search?q=c%3Dwhite+cmc%3D1'
+    def import_deck(self):
+        path, _ = QtWidgets.QFileDialog.getOpenFileName(self.newDeckDialog, "Choose Deck to import", rootdir, "Deck Files (*.json)", options=QtWidgets.QFileDialog.DontUseNativeDialog)
+        self.newDeckGUI.newDeckDuplicateLineEdit.setText(path)
+
+    # def save_deck_as(self):
+    #     path, _ = QtWidgets.QFileDialog.getSaveFileName(self.newDeckDialog, "Save new deck as", rootdir,
+    #                                                     "Deck Files (*.json)",
+    #                                                     options=QtWidgets.QFileDialog.DontUseNativeDialog)
+
+
+
+    # Example request: 'https://api.scryfall.com/cards/search?q=c%3Dwhite+cmc%3D1'
     def get_query(self):
         txt = self.gui.queryLineEdit.text()
         dict = json.loads(txt)
@@ -87,9 +128,11 @@ class MtgGUI():
 
         self.gui.collectionCardsTable.resizeColumnsToContents()
 
-    def reactTabChange(self, tabIdx):
+
+    def react_tab_change(self, tabIdx):
         if (tabIdx == 1):
             self.loadDecksList()
+
 
     def loadDecksList(self):
         # lear current content of table
@@ -105,6 +148,8 @@ class MtgGUI():
             currentTableRowIndex = self.gui.decksDecklistTable.rowCount()
             self.gui.decksDecklistTable.insertRow(currentTableRowIndex)
             self.gui.decksDecklistTable.setItem(currentTableRowIndex, 0, QtWidgets.QTableWidgetItem(deck))
+
+        self.gui.decksDecklistTable.resizeColumnsToContents()
 
 
 

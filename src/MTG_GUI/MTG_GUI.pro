@@ -31,4 +31,5 @@ HEADERS += \
         mtg_ui.h
 
 FORMS += \
-        mtg_ui.ui
+        mtg_ui.ui \
+    new_deck.ui
