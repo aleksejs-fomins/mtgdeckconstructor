@@ -18,7 +18,7 @@
     <item>
      <widget class="QTabWidget" name="mainTabWidget">
       <property name="currentIndex">
-       <number>0</number>
+       <number>1</number>
       </property>
       <widget class="QWidget" name="collectionTab">
        <attribute name="title">
@@ -42,7 +42,17 @@
         <item>
          <layout class="QVBoxLayout" name="decksControlLayout">
           <item>
-           <widget class="QTableWidget" name="decksDecklistTable"/>
+           <widget class="QTableWidget" name="decksDecklistTable">
+            <property name="showGrid">
+             <bool>false</bool>
+            </property>
+            <attribute name="horizontalHeaderVisible">
+             <bool>false</bool>
+            </attribute>
+            <attribute name="verticalHeaderVisible">
+             <bool>false</bool>
+            </attribute>
+           </widget>
           </item>
           <item>
            <widget class="QComboBox" name="zoneComboBox"/>
@@ -116,7 +126,7 @@
      <x>0</x>
      <y>0</y>
      <width>944</width>
-     <height>22</height>
+     <height>26</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">

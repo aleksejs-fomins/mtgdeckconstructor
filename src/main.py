@@ -47,6 +47,9 @@ class MtgGUI():
         self.gui.queryPushButton.clicked.connect(self.get_query)
         self.gui.queryAddCollectionPushButton.clicked.connect(self.query_add_to_collection)
 
+        self.gui.mainTabWidget.currentChanged.connect(self.reactTabChange)
+
+
         # Example request: 'https://api.scryfall.com/cards/search?q=c%3Dwhite+cmc%3D1'
     def get_query(self):
         txt = self.gui.queryLineEdit.text()
@@ -83,6 +86,31 @@ class MtgGUI():
                 self.gui.collectionCardsTable.setItem(rowIdxQtable, iCol, QtWidgets.QTableWidgetItem(cell))
 
         self.gui.collectionCardsTable.resizeColumnsToContents()
+
+    def reactTabChange(self, tabIdx):
+        if (tabIdx == 1):
+            self.loadDecksList()
+
+    def loadDecksList(self):
+        # lear current content of table
+        self.gui.decksDecklistTable.setRowCount(0)
+        self.gui.decksDecklistTable.setColumnCount(1)
+
+        # find all deck files under Decks folder
+        decksPath = os.path.join(rootdir, "Decks")
+        decksList = [f for f in os.listdir(decksPath) if os.path.isfile(os.path.join(decksPath, f))]
+
+        # display list of decks in Decks table
+        for deck in decksList:
+            currentTableRowIndex = self.gui.decksDecklistTable.rowCount()
+            self.gui.decksDecklistTable.insertRow(currentTableRowIndex)
+            self.gui.decksDecklistTable.setItem(currentTableRowIndex, 0, QtWidgets.QTableWidgetItem(deck))
+
+
+
+        #onlyfiles = [f for f in listdir(mypath) if isfile(join(mypath, f))]
+        # When the Decks tab is selected load the list of decks stored locally on the drive
+
 
 
         # tableWidget.setRowCount(len(data))
