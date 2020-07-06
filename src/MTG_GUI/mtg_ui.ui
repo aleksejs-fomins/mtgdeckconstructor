@@ -42,6 +42,25 @@
         <item>
          <layout class="QVBoxLayout" name="decksControlLayout">
           <item>
+           <widget class="QComboBox" name="decksFormatComboBox">
+            <item>
+             <property name="text">
+              <string>---Select Deck Type---</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Standard</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Commander</string>
+             </property>
+            </item>
+           </widget>
+          </item>
+          <item>
            <widget class="QTableWidget" name="decksDecklistTable">
             <property name="showGrid">
              <bool>false</bool>
@@ -55,14 +74,21 @@
            </widget>
           </item>
           <item>
-           <widget class="QComboBox" name="zoneComboBox"/>
+           <widget class="QPushButton" name="decksNewDeckPushButton">
+            <property name="text">
+             <string>New Deck</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QComboBox" name="decksZoneComboBox"/>
           </item>
           <item>
            <widget class="QFrame" name="decksCardImageFrame">
             <property name="minimumSize">
              <size>
               <width>0</width>
-              <height>400</height>
+              <height>300</height>
              </size>
             </property>
             <property name="frameShape">
@@ -76,7 +102,14 @@
          </layout>
         </item>
         <item>
-         <widget class="QTableWidget" name="decksCardsTable"/>
+         <widget class="QTableWidget" name="decksCardsTable">
+          <property name="minimumSize">
+           <size>
+            <width>600</width>
+            <height>0</height>
+           </size>
+          </property>
+         </widget>
         </item>
        </layout>
       </widget>
@@ -126,7 +159,7 @@
      <x>0</x>
      <y>0</y>
      <width>944</width>
-     <height>26</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -151,6 +184,21 @@
    </attribute>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
+  <action name="actionNew_Standar_Deck">
+   <property name="text">
+    <string>Standar Deck</string>
+   </property>
+  </action>
+  <action name="actionCommander_Deck">
+   <property name="text">
+    <string>Commander Deck</string>
+   </property>
+  </action>
+  <action name="actionNewDeck">
+   <property name="text">
+    <string>New Deck</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <resources/>
