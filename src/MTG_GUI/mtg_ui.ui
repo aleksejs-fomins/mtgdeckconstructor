@@ -18,18 +18,66 @@
     <item>
      <widget class="QTabWidget" name="mainTabWidget">
       <property name="currentIndex">
-       <number>1</number>
+       <number>2</number>
       </property>
-      <widget class="QWidget" name="collectionTab">
+      <widget class="QWidget" name="queryTab">
        <attribute name="title">
-        <string>Collection</string>
+        <string>Query</string>
        </attribute>
-       <layout class="QHBoxLayout" name="horizontalLayout_2">
+       <layout class="QVBoxLayout" name="verticalLayout_2">
+        <item>
+         <layout class="QHBoxLayout" name="scryfallQueryLayout">
+          <item>
+           <widget class="QLineEdit" name="queryLineEdit">
+            <property name="text">
+             <string>{&quot;set&quot; : &quot;c20&quot;, &quot;type&quot; : &quot;human&quot;}</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QComboBox" name="queryComboBox">
+            <item>
+             <property name="text">
+              <string>Scryfall</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Local</string>
+             </property>
+            </item>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="queryPushButton">
+            <property name="text">
+             <string>Query</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
         <item>
          <widget class="QTableWidget" name="collectionCardsTable">
+          <property name="enabled">
+           <bool>true</bool>
+          </property>
+          <property name="editTriggers">
+           <set>QAbstractItemView::NoEditTriggers</set>
+          </property>
+          <property name="selectionBehavior">
+           <enum>QAbstractItemView::SelectRows</enum>
+          </property>
           <attribute name="verticalHeaderVisible">
            <bool>false</bool>
           </attribute>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="queryAddCollectionPushButton">
+          <property name="text">
+           <string>Add To Collection</string>
+          </property>
          </widget>
         </item>
        </layout>
@@ -62,6 +110,9 @@
           </item>
           <item>
            <widget class="QTableWidget" name="decksDecklistTable">
+            <property name="editTriggers">
+             <set>QAbstractItemView::NoEditTriggers</set>
+            </property>
             <property name="showGrid">
              <bool>false</bool>
             </property>
@@ -117,35 +168,79 @@
        <attribute name="title">
         <string>Proxy PDF</string>
        </attribute>
+       <layout class="QVBoxLayout" name="verticalLayout_3">
+        <item>
+         <layout class="QHBoxLayout" name="proxyControlsLayout">
+          <item>
+           <widget class="QPushButton" name="proxyLoadLocalPushButton">
+            <property name="text">
+             <string>Load Local Imgs</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="proxyExportPDFPushButton">
+            <property name="text">
+             <string>Export To PDF</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QComboBox" name="proxyPaperSizeComboBox">
+            <item>
+             <property name="text">
+              <string>A4</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>A3</string>
+             </property>
+            </item>
+           </widget>
+          </item>
+          <item>
+           <widget class="QComboBox" name="proxyPaperOrientationComboBox">
+            <item>
+             <property name="text">
+              <string>portrait</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>landscape</string>
+             </property>
+            </item>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="proxyClearPushButton">
+            <property name="text">
+             <string>Clear Selected</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <widget class="QTableWidget" name="proxyURLSTable">
+          <property name="editTriggers">
+           <set>QAbstractItemView::NoEditTriggers</set>
+          </property>
+          <property name="selectionBehavior">
+           <enum>QAbstractItemView::SelectRows</enum>
+          </property>
+         </widget>
+        </item>
+       </layout>
       </widget>
-      <widget class="QWidget" name="Scryfall">
+      <widget class="QWidget" name="collectionTab">
        <attribute name="title">
-        <string>Scryfall</string>
+        <string>Log</string>
        </attribute>
-       <layout class="QVBoxLayout" name="verticalLayout_2">
-        <item>
-         <widget class="QLineEdit" name="queryLineEdit">
-          <property name="text">
-           <string>{&quot;set&quot; : &quot;c20&quot;, &quot;type&quot; : &quot;human&quot;}</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QPushButton" name="queryPushButton">
-          <property name="text">
-           <string>Query</string>
-          </property>
-         </widget>
-        </item>
+       <layout class="QHBoxLayout" name="horizontalLayout_2">
         <item>
          <widget class="QTextEdit" name="responseTextEdit"/>
-        </item>
-        <item>
-         <widget class="QPushButton" name="queryAddCollectionPushButton">
-          <property name="text">
-           <string>Add To Collection</string>
-          </property>
-         </widget>
         </item>
        </layout>
       </widget>

@@ -3,7 +3,6 @@
 ###############################
 import os, sys, locale
 import shutil
-import requests
 import json
 import pandas as pd
 from PyQt5 import QtGui, QtCore, QtWidgets
@@ -20,7 +19,11 @@ sys.path.append(rootdir)
 #######################################
 
 import src.lib.os_lib as os_lib
+import src.lib.qt_helper as qt_helper
+import src.lib.collection as collection
+import src.lib.request_lib as request_lib
 from src.lib.deck_lib import MagicDeck
+import src.lib.proxy_lib as proxy_lib
 
 from src.MTG_GUI.mtg_ui import Ui_MTG_UI
 from src.MTG_GUI.new_deck import Ui_NewDeck
@@ -46,14 +49,27 @@ class MtgGUI():
         self.fontsize = 15
 
         # Variables
+        self.dataDir = os.path.join(rootdir, "Data")
         self.decksDir = os.path.join(rootdir, "Decks")
+        self.collectionDir = os.path.join(self.dataDir, "collection.h5")
         self.tmpFileName = os.path.join(self.decksDir, "tmpdeck.json")
 
         # Reacts
-        self.gui.queryPushButton.clicked.connect(self.get_query)
-        self.gui.queryAddCollectionPushButton.clicked.connect(self.query_add_to_collection)
+        self.gui.queryPushButton.clicked.connect(self.query_get)
+        self.gui.queryAddCollectionPushButton.clicked.connect(self.update_collection)
         self.gui.mainTabWidget.currentChanged.connect(self.react_tab_change)
         self.gui.decksNewDeckPushButton.clicked.connect(self.new_deck_start_gui)
+        self.gui.decksDecklistTable.cellDoubleClicked.connect(lambda iRow, iCol: self.load_deck_event(iRow, iCol))
+        self.gui.collectionCardsTable.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+        self.gui.collectionCardsTable.customContextMenuRequested.connect(self.collection_table_context_menu)
+        self.gui.proxyLoadLocalPushButton.clicked.connect(self.proxy_load_from_file)
+        self.gui.proxyExportPDFPushButton.clicked.connect(self.proxy_export)
+        self.gui.proxyClearPushButton.clicked.connect(self.proxy_clear_table)
+
+
+    #############################
+    #  Decks
+    #############################
 
     def new_deck_start_gui(self):
         # Init
@@ -79,7 +95,6 @@ class MtgGUI():
 
         self.newDeckDialog.close()
 
-
     def import_deck(self):
         path, _ = QtWidgets.QFileDialog.getOpenFileName(self.newDeckDialog, "Choose Deck to import", rootdir, "Deck Files (*.json)", options=QtWidgets.QFileDialog.DontUseNativeDialog)
         self.newDeckGUI.newDeckDuplicateLineEdit.setText(path)
@@ -89,91 +104,120 @@ class MtgGUI():
     #                                                     "Deck Files (*.json)",
     #                                                     options=QtWidgets.QFileDialog.DontUseNativeDialog)
 
-
-
-    # Example request: 'https://api.scryfall.com/cards/search?q=c%3Dwhite+cmc%3D1'
-    def get_query(self):
-        txt = self.gui.queryLineEdit.text()
-        dict = json.loads(txt)
-
-        cardsSite = "https://api.scryfall.com/cards/search?q="
-        req = cardsSite + "+".join([str(k) + "%3D" + str(v) for k, v in dict.items()])
-        r = requests.get(req)
-        rJSON = r.json()
-
-        importantColumns = ['name', 'mana_cost', 'power', 'toughness', 'rarity', 'set', 'type_line']
-        df = pd.DataFrame(rJSON['data'])
-        df = df[importantColumns]
-
-        self.gui.responseTextEdit.setText(str(df))
-
-        self.recentQueryDF = df
-
-
-    def query_add_to_collection(self):
-        self.display_dataframe_collection(self.recentQueryDF)
-
-
-    def display_dataframe_collection(self, df):
-        # Set columns of QTable as DataFrame columns
-        self.gui.collectionCardsTable.setColumnCount(len(df.columns))
-        self.gui.collectionCardsTable.setHorizontalHeaderLabels(list(df.columns))
-
-        for idx, row in df.iterrows():
-            rowIdxQtable = self.gui.collectionCardsTable.rowCount()
-
-            self.gui.collectionCardsTable.insertRow(rowIdxQtable)
-            for iCol, cell in enumerate(list(row)):
-                self.gui.collectionCardsTable.setItem(rowIdxQtable, iCol, QtWidgets.QTableWidgetItem(cell))
-
-        self.gui.collectionCardsTable.resizeColumnsToContents()
-
-
-    def react_tab_change(self, tabIdx):
-        if (tabIdx == 1):
-            self.loadDecksList()
-
-
-    def loadDecksList(self):
-        # lear current content of table
-        self.gui.decksDecklistTable.setRowCount(0)
-        self.gui.decksDecklistTable.setColumnCount(1)
-
+    def load_decks_list(self):
         # find all deck files under Decks folder
         decksPath = os.path.join(rootdir, "Decks")
         decksList = [f for f in os.listdir(decksPath) if os.path.isfile(os.path.join(decksPath, f))]
+        decksDF = pd.DataFrame({"Decks" : decksList})
 
-        # display list of decks in Decks table
-        for deck in decksList:
-            currentTableRowIndex = self.gui.decksDecklistTable.rowCount()
-            self.gui.decksDecklistTable.insertRow(currentTableRowIndex)
-            self.gui.decksDecklistTable.setItem(currentTableRowIndex, 0, QtWidgets.QTableWidgetItem(deck))
+        qt_helper.qtable_load_from_pandas(self.gui.decksDecklistTable, decksDF)
 
-        self.gui.decksDecklistTable.resizeColumnsToContents()
+    def load_deck_event(self, iRow, iCol):
+        fileName = self.gui.decksDecklistTable.item(iRow, iCol).text()
+        print(fileName)
 
+    def refresh_decklist(self):
+        pass
 
+    #############################
+    #  Queries and Collection
+    #############################
 
-        #onlyfiles = [f for f in listdir(mypath) if isfile(join(mypath, f))]
-        # When the Decks tab is selected load the list of decks stored locally on the drive
+    def query_get(self):
+        txt = self.gui.queryLineEdit.text()
+        queryDict = json.loads(txt)
 
+        if self.gui.queryComboBox.currentText() == "Scryfall":
+            df = request_lib.query_scryfall(queryDict)
+            self.gui.responseTextEdit.append("Loaded query from Scryfall:" + str(queryDict))
+        else:
+            dfAll = collection.load_collection(self.collectionDir)
+            df = collection.query_collection(dfAll, queryDict)
+            self.gui.responseTextEdit.append("Loaded query from Local:" + str(queryDict))
 
+        self.recentQueryDF = df
+        self.display_collection(self.recentQueryDF)
 
-        # tableWidget.setRowCount(len(data))
+    def update_collection(self):
+        collection.update_collection(self.collectionDir, self.recentQueryDF)
 
-        # for i in range(0, len(data)):
-        #     for j in range(0, len(data.columns)):
-        #         item1 = str(data.iloc[i, j])
-        #         tableWidget.setItem(i, j, QTableWidgetItem(item1))
-        # return tableWidget
+    def display_collection(self, df):
+        importantColumns = ['name', 'mana_cost', 'rarity', 'set', 'type_line']
+        dfFilter = df[importantColumns]
+        qt_helper.qtable_load_from_pandas(self.gui.collectionCardsTable, dfFilter)
 
+    def react_tab_change(self, tabIdx):
+        if tabIdx == 1:
+            self.load_decks_list()
 
+    def collection_table_context_menu(self, point):
+        self._menu = QtWidgets.QMenu(self.gui.collectionCardsTable)
+        actionAddToDeck = self._menu.addAction('Add to deck')
+        actionAddToProxy = self._menu.addAction('Add to proxies')
+        actionAddToDeck.triggered.connect(self.add_selected_cards_to_deck)
+        actionAddToProxy.triggered.connect(self.proxy_add_from_collection)
+        self._menu.popup(self.gui.collectionCardsTable.viewport().mapToGlobal(point))
 
+    def add_selected_cards_to_deck(self):
+        selectedRows = qt_helper.qtable_to_pandas(self.gui.collectionCardsTable, selected=True)
+        selectedNames = list(selectedRows["name"])
+        for name in selectedNames:
+            self.currentDeckClass.add_card(name, "maindeck")
 
-        # For each row in DataFrame add that row as new row to QTable
+    #############################
+    #  Proxies
+    #############################
 
+    def proxy_update_table(self, names, paths, origin):
+        append = self.gui.proxyURLSTable.rowCount() != 0
+        df = pd.DataFrame({'origin': [origin] * len(paths), 'name' : names, 'path': paths})
+        qt_helper.qtable_load_from_pandas(self.gui.proxyURLSTable, df, append=append)
 
+    def proxy_clear_table(self):
+        qt_helper.qtable_delete_selected(self.gui.proxyURLSTable)
 
+    def proxy_add_from_collection(self):
+        selectedRows = qt_helper.qtable_to_pandas(self.gui.collectionCardsTable, selected=True)
 
+        names = []
+        urls = []
+        for idx, row in selectedRows.iterrows():
+            queryRows = collection.pd_query_partial(self.recentQueryDF, {"name" : row["name"]})
+            if len(queryRows) != 1:
+                raise ValueError("Unexpected response", queryRows, "to query", dict(row))
+
+            for idxQ, rowQ in queryRows.iterrows():
+                names += [rowQ['name']]
+                urls += [rowQ['image_uris']['large']]
+
+        self.proxy_update_table(names, urls, "web")
+
+    def proxy_load_from_file(self):
+        if hasattr(self, 'recentProxyDir'):
+            thisPath = self.recentProxyDir
+        else:
+            thisPath = rootdir
+
+        paths, _ = QtWidgets.QFileDialog.getOpenFileNames(self.dialog, "Select proxy images", thisPath, "",
+                                                        options=QtWidgets.QFileDialog.DontUseNativeDialog)
+        if len(paths) > 0:
+            self.recentProxyDir = os.path.dirname(paths[0])
+            names = [os.path.splitext(os.path.basename(path))[0] for path in paths]
+            self.proxy_update_table(names, paths, "local")
+
+    def proxy_export(self):
+        path, _ = QtWidgets.QFileDialog.getSaveFileName(self.dialog, "Save stacked proxies as...", rootdir, "",
+                                                        options=QtWidgets.QFileDialog.DontUseNativeDialog)
+        # Get rid of extension if any provided
+        path = os.path.splitext(path)[0]
+
+        # Load paper parameters from GUI
+        paperSize = self.gui.proxyPaperSizeComboBox.currentText()
+        paperOrientation = self.gui.proxyPaperOrientationComboBox.currentText()
+
+        df = qt_helper.qtable_to_pandas(self.gui.proxyURLSTable)
+        imgs = proxy_lib.imgs_from_paths(df)
+        proxy_lib.stack_imgs_pdf(imgs, path, paper=paperSize, orientation=paperOrientation)
 
 #######################################################
 ## Start the QT window
