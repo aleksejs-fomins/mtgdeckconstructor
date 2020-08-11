@@ -1,6 +1,7 @@
 import os
 import json
 import requests
+import numpy as np
 import pandas as pd
 from PIL import Image
 from io import BytesIO
@@ -12,10 +13,11 @@ def query_scryfall(queryDict):
     r = requests.get(req)
     rJSON = r.json()
     if "data" in rJSON:
-        return pd.DataFrame(rJSON['data'])
-    else:
-        print("Warning: Nothing found")
-        return pd.DataFrame({k : [] for k in ['name', 'mana_cost', 'rarity', 'set', 'type_line']})
+        if np.all(["mana_cost" in d for d in rJSON['data']]):
+            return pd.DataFrame(rJSON['data'])
+
+    print("Warning: strange response, returning empty:", rJSON)
+    return pd.DataFrame({k : [] for k in ['name', 'mana_cost', 'rarity', 'set', 'type_line']})
 
 
 def query_google_imgs(rootDir, queryDict):

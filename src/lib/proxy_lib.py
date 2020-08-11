@@ -52,7 +52,7 @@ def stack_imgs_pdf(imgs, outpath, paper='A4', orientation='portrait'):
         page = Image.new('RGB', shape300dpiPaper, 'white')
         for i in range(nFigY):
             for j in range(nFigX):
-                idx1D = nFigY * i + j
+                idx1D = nFigX * i + j
                 if idx1D < len(group1D):
                     box = (
                         dx * (j + 1) + shape300dpiCard[0] * j,
