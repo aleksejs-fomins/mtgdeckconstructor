@@ -35,6 +35,16 @@ def query_collection(df, queryDict):
     return pd_query_partial(df, queryDictEff)
 
 
+def pd_query(df, queryDict):
+    if len(queryDict) == 0:
+        return df
+    else:
+        # Query likes strings to be wrapped in quotation marks for later evaluation
+        strwrap = lambda val: '"' + val + '"' if isinstance(val, str) else str(val)
+        query = ' and '.join([colname+'=='+strwrap(val) for colname, val in queryDict.items()])
+        return df.query(query)
+
+
 # Get rows for which several columns have some exact values
 def pd_query_partial(df, queryDict):
     dfRez = df.copy()

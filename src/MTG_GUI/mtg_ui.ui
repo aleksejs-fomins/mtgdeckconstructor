@@ -172,20 +172,6 @@
         <item>
          <layout class="QHBoxLayout" name="proxyControlsLayout">
           <item>
-           <widget class="QPushButton" name="proxyLoadLocalPushButton">
-            <property name="text">
-             <string>Load Local Imgs</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QPushButton" name="proxyExportPDFPushButton">
-            <property name="text">
-             <string>Export To PDF</string>
-            </property>
-           </widget>
-          </item>
-          <item>
            <widget class="QComboBox" name="proxyPaperSizeComboBox">
             <item>
              <property name="text">
@@ -211,6 +197,45 @@
               <string>landscape</string>
              </property>
             </item>
+           </widget>
+          </item>
+          <item>
+           <widget class="QComboBox" name="proxyScaleComboBox">
+            <property name="currentText">
+             <string>100%</string>
+            </property>
+            <item>
+             <property name="text">
+              <string>90%</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>95%</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>100%</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>105%</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>110%</string>
+             </property>
+            </item>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="proxyExportPDFPushButton">
+            <property name="text">
+             <string>Export To PDF</string>
+            </property>
            </widget>
           </item>
           <item>
@@ -254,7 +279,7 @@
      <x>0</x>
      <y>0</y>
      <width>944</width>
-     <height>22</height>
+     <height>29</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -264,11 +289,19 @@
    </widget>
    <widget class="QMenu" name="menuEdit">
     <property name="title">
-     <string>Edit</string>
+     <string>Query</string>
     </property>
+    <addaction name="actionFrom_file"/>
+   </widget>
+   <widget class="QMenu" name="menuProxy">
+    <property name="title">
+     <string>Proxy</string>
+    </property>
+    <addaction name="actionLoad_Local_Images"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
+   <addaction name="menuProxy"/>
   </widget>
   <widget class="QToolBar" name="mainToolBar">
    <attribute name="toolBarArea">
@@ -292,6 +325,21 @@
   <action name="actionNewDeck">
    <property name="text">
     <string>New Deck</string>
+   </property>
+  </action>
+  <action name="actionLoad_Local_Images">
+   <property name="text">
+    <string>Load Local Images</string>
+   </property>
+  </action>
+  <action name="actionLoad_From_TXT">
+   <property name="text">
+    <string>Load From TXT...</string>
+   </property>
+  </action>
+  <action name="actionFrom_file">
+   <property name="text">
+    <string>From file....</string>
    </property>
   </action>
  </widget>

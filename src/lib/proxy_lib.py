@@ -1,4 +1,5 @@
 import os, sys
+import numpy as np
 from PIL import Image
 
 from src.lib.request_lib import get_image_by_url
@@ -32,9 +33,9 @@ def get_paper_size_300DPI(paper, orientation):
 
 
 
-def stack_imgs_pdf(imgs, outpath, paper='A4', orientation='portrait'):
+def stack_imgs_pdf(imgs, outpath, paper='A4', orientation='portrait', scale=1.0):
     shape300dpiPaper = get_paper_size_300DPI(paper, orientation)
-    shape300dpiCard = (744, 1039)
+    shape300dpiCard = (np.array([744, 1039]) * scale).astype(int)
     # dx = (62, 98)
 
     nFigX = shape300dpiPaper[0] // shape300dpiCard[0]

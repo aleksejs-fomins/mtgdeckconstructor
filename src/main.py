@@ -1,3 +1,14 @@
+'''
+TODO:
+    * Functionality
+        * Scryfall enable search using exact name. "!" suggested on their website does not work
+    * Quality of life:
+        * Proxies->Clear Selected - convert to DEL key
+        * Implement Delete key for query results
+        * Store most recent font size in a proxy file
+'''
+
+
 ###############################
 # Import system libraries
 ###############################
@@ -25,14 +36,14 @@ import src.lib.request_lib as request_lib
 from src.lib.deck_lib import MagicDeck
 import src.lib.proxy_lib as proxy_lib
 
-from src.MTG_GUI.mtg_ui import Ui_MTG_UI
-from src.MTG_GUI.new_deck import Ui_NewDeck
-
 #######################################
 # Compile QT File
 #######################################
 os_lib.compile_form(os.path.join(thisdir, "MTG_GUI", 'mtg_ui.ui'))
 os_lib.compile_form(os.path.join(thisdir, "MTG_GUI", 'new_deck.ui'))
+
+from src.MTG_GUI.mtg_ui import Ui_MTG_UI
+from src.MTG_GUI.new_deck import Ui_NewDeck
 
 #######################################################
 # Main Window
@@ -62,9 +73,14 @@ class MtgGUI():
         self.gui.decksDecklistTable.cellDoubleClicked.connect(lambda iRow, iCol: self.load_deck_event(iRow, iCol))
         self.gui.collectionCardsTable.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.gui.collectionCardsTable.customContextMenuRequested.connect(self.collection_table_context_menu)
-        self.gui.proxyLoadLocalPushButton.clicked.connect(self.proxy_load_from_file)
+        # self.gui.proxyLoadLocalPushButton.clicked.connect(self.proxy_load_from_file)
         self.gui.proxyExportPDFPushButton.clicked.connect(self.proxy_export)
         self.gui.proxyClearPushButton.clicked.connect(self.proxy_clear_table)
+
+        self.dialog.keyPressEvent = self.keyPressEvent
+
+        self.gui.actionLoad_Local_Images.triggered.connect(self.proxy_load_from_file)
+        self.gui.actionFrom_file.triggered.connect(self.collection_import_text)
 
 
     #############################
@@ -158,6 +174,29 @@ class MtgGUI():
         actionAddToProxy.triggered.connect(self.proxy_add_from_collection)
         self._menu.popup(self.gui.collectionCardsTable.viewport().mapToGlobal(point))
 
+    def collection_import_text(self):
+        if hasattr(self, 'recentProxyDir'):
+            thisPath = self.recentProxyDir
+        else:
+            thisPath = rootdir
+
+        fname, _ = QtWidgets.QFileDialog.getOpenFileName(self.dialog, "Select proxy text file", thisPath, "*.txt", options=QtWidgets.QFileDialog.DontUseNativeDialog)
+        if fname != "":
+            self.recentProxyDir = os.path.dirname(fname)
+            with open(fname, 'r') as f:
+                lines = f.readlines()
+                names = [' '.join(s.split(' ')[1 : -1]) for s in lines]
+
+            rezDF = pd.DataFrame()
+            for name in names:
+                queryDict = {'name' : '!'+name}
+                df = request_lib.query_scryfall(queryDict)
+                rezDF = rezDF.append(df)
+                self.gui.responseTextEdit.append("Loaded query from Scryfall:" + str(queryDict))
+
+            self.recentQueryDF = rezDF
+            self.display_collection(self.recentQueryDF)
+
     def add_selected_cards_to_deck(self):
         selectedRows = qt_helper.qtable_to_pandas(self.gui.collectionCardsTable, selected=True)
         selectedNames = list(selectedRows["name"])
@@ -182,7 +221,7 @@ class MtgGUI():
         names = []
         urls = []
         for idx, row in selectedRows.iterrows():
-            queryRows = collection.pd_query_partial(self.recentQueryDF, {"name" : row["name"]})
+            queryRows = collection.pd_query(self.recentQueryDF, {"name" : row["name"]})
             if len(queryRows) != 1:
                 raise ValueError("Unexpected response", queryRows, "to query", dict(row))
 
@@ -214,10 +253,27 @@ class MtgGUI():
         # Load paper parameters from GUI
         paperSize = self.gui.proxyPaperSizeComboBox.currentText()
         paperOrientation = self.gui.proxyPaperOrientationComboBox.currentText()
+        cardScale = self.gui.proxyScaleComboBox.currentText()
+        cardScale = int(cardScale[:-1]) / 100.0
 
         df = qt_helper.qtable_to_pandas(self.gui.proxyURLSTable)
         imgs = proxy_lib.imgs_from_paths(df)
-        proxy_lib.stack_imgs_pdf(imgs, path, paper=paperSize, orientation=paperOrientation)
+        proxy_lib.stack_imgs_pdf(imgs, path, paper=paperSize, orientation=paperOrientation, scale=cardScale)
+
+    #############################
+    #  Auxiliary
+    #############################
+
+    # React to key presses
+    def keyPressEvent(self, e):
+        if e.key() == QtCore.Qt.Key_Plus or e.key() == QtCore.Qt.Key_Minus:
+            self.fontsize += int(e.key() == QtCore.Qt.Key_Plus) - int(e.key() == QtCore.Qt.Key_Minus)
+            self.updateSystemFontSize()
+
+    def updateSystemFontSize(self):
+        print("New font size", self.fontsize)
+        self.gui.centralWidget.setStyleSheet("font-size: " + str(self.fontsize) + "pt;")
+        self.gui.menuBar.setStyleSheet("font-size: " + str(self.fontsize) + "pt;")
 
 #######################################################
 ## Start the QT window
